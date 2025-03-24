@@ -3,29 +3,40 @@ import Firebase
 
 extension API {
     struct Game {
-        private static func shouldAwardPoint(player1Answer: Int?, player2Answer: Int?, correctAnswer: Int, player1Time: Date?, player2Time: Date?) -> Bool {
+        private enum PointAward {
+            case player1
+            case player2
+            case none
+        }
+        
+        private static func shouldAwardPoint(player1Answer: Int?, player2Answer: Int?, correctAnswer: Int, player1Time: Double?, player2Time: Double?) -> PointAward {
             guard let player1Answer = player1Answer, let player2Answer = player2Answer,
                   let player1Time = player1Time, let player2Time = player2Time else {
-                return false
+                return .none
             }
             
+            // Both answers are already zero-based indices, so we can compare directly
             let player1Correct = player1Answer == correctAnswer
             let player2Correct = player2Answer == correctAnswer
             
+            // If both players are wrong, no point awarded
+            if !player1Correct && !player2Correct {
+                return .none
+            }
+            
             // If one player is correct and the other is wrong, award point to correct player
             if player1Correct && !player2Correct {
-                return true
+                return .player1
             } else if !player1Correct && player2Correct {
-                return false
+                return .player2
             }
             
             // If both players are correct, award point to faster player
             if player1Correct && player2Correct {
-                return player1Time < player2Time
+                return player1Time < player2Time ? .player1 : .player2
             }
             
-            // If both players are wrong, no point awarded
-            return false
+            return .none
         }
         
         static func createGame() async throws -> QuizGame {
@@ -171,7 +182,7 @@ extension API {
             throw NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No question available for Player 2"])
         }
         
-        static func submitAnswer(gameId: String, answerIndex: Int) async throws {
+        static func submitAnswer(gameId: String, answerIndex: Int, timeToAnswer: Double) async throws {
             let currentUserId = FirebaseManager.shared.getCurrentUser()?.uid
             
             guard let currentUserId = currentUserId else {
@@ -206,13 +217,21 @@ extension API {
                     state: .player2Turn,
                     player1Answer: answerIndex,
                     player2Answer: game.player2Answer,
-                    player1AnswerTime: Date(),
+                    player1AnswerTime: timeToAnswer,
                     player2AnswerTime: game.player2AnswerTime
                 )
             } else if currentUserId == game.player2Id {
                 // Player 2 is answering
-                let newPlayer1Score = game.player1Score + (shouldAwardPoint(player1Answer: game.player1Answer, player2Answer: answerIndex, correctAnswer: question.correctAnswer, player1Time: game.player1AnswerTime, player2Time: Date()) ? 1 : 0)
-                let newPlayer2Score = game.player2Score + (shouldAwardPoint(player1Answer: game.player1Answer, player2Answer: answerIndex, correctAnswer: question.correctAnswer, player1Time: game.player1AnswerTime, player2Time: Date()) ? 0 : 1)
+                let pointAward = shouldAwardPoint(
+                    player1Answer: game.player1Answer,
+                    player2Answer: answerIndex,
+                    correctAnswer: question.correctAnswer,
+                    player1Time: game.player1AnswerTime,
+                    player2Time: timeToAnswer
+                )
+                
+                let newPlayer1Score = game.player1Score + (pointAward == .player1 ? 1 : 0)
+                let newPlayer2Score = game.player2Score + (pointAward == .player2 ? 1 : 0)
                 
                 // Check if game is over (someone reached 3 points)
                 let isGameOver = newPlayer1Score >= 3 || newPlayer2Score >= 3
@@ -264,8 +283,8 @@ struct QuizGame: Identifiable, Codable {
     let state: GameState
     let player1Answer: Int?
     let player2Answer: Int?
-    let player1AnswerTime: Date?
-    let player2AnswerTime: Date?
+    let player1AnswerTime: Double?
+    let player2AnswerTime: Double?
     
     enum CodingKeys: String, CodingKey {
         case id
@@ -283,7 +302,7 @@ struct QuizGame: Identifiable, Codable {
         case player2AnswerTime
     }
     
-    init(id: String, code: String, player1Id: String, player2Id: String?, currentQuestionId: String?, player1Score: Int, player2Score: Int, currentPlayerTurn: Int, state: GameState, player1Answer: Int? = nil, player2Answer: Int? = nil, player1AnswerTime: Date? = nil, player2AnswerTime: Date? = nil) {
+    init(id: String, code: String, player1Id: String, player2Id: String?, currentQuestionId: String?, player1Score: Int, player2Score: Int, currentPlayerTurn: Int, state: GameState, player1Answer: Int? = nil, player2Answer: Int? = nil, player1AnswerTime: Double? = nil, player2AnswerTime: Double? = nil) {
         self.id = id
         self.code = code
         self.player1Id = player1Id
@@ -316,8 +335,8 @@ struct QuizGame: Identifiable, Codable {
         state = decodedState
         player1Answer = try container.decodeIfPresent(Int.self, forKey: .player1Answer)
         player2Answer = try container.decodeIfPresent(Int.self, forKey: .player2Answer)
-        player1AnswerTime = try container.decodeIfPresent(Date.self, forKey: .player1AnswerTime)
-        player2AnswerTime = try container.decodeIfPresent(Date.self, forKey: .player2AnswerTime)
+        player1AnswerTime = try container.decodeIfPresent(Double.self, forKey: .player1AnswerTime)
+        player2AnswerTime = try container.decodeIfPresent(Double.self, forKey: .player2AnswerTime)
     }
     
     func encode(to encoder: Encoder) throws {

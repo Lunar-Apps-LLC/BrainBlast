@@ -14,6 +14,7 @@ final class GameViewModel: ObservableObject {
     @Published var errorMessage: String?
     private var listener: ListenerRegistration?
     private let gameId: String
+    private var questionStartTime: Date?
     
     init(gameId: String) {
         self.gameId = gameId
@@ -28,6 +29,7 @@ final class GameViewModel: ObservableObject {
             case .success(let game):
                 Task { @MainActor in
                     let oldState = self.game?.state
+                    let oldQuestionId = self.game?.currentQuestionId
                     self.game = game
                     
                     // If the game just transitioned from waiting to playing (Player 2 joined)
@@ -37,18 +39,37 @@ final class GameViewModel: ObservableObject {
                             let question = try await API.Question.fetchRandomQuestion()
                             try await API.Game.updateQuestion(gameId: self.gameId, questionId: question.id)
                             self.currentQuestion = question
+                            self.questionStartTime = Date()
                         } catch {
                             self.errorMessage = error.localizedDescription
                         }
                     }
-                    // If there's a question ID in the game and we don't have the question loaded
-                    else if let questionId = game.currentQuestionId,
-                            self.currentQuestion == nil {
+                    // If it's Player 1's turn and there's no current question
+                    else if game.currentPlayerTurn == 1 && game.currentQuestionId == nil {
                         do {
-                            self.currentQuestion = try await API.Question.getQuestion(id: questionId)
+                            // Fetch a new random question
+                            let question = try await API.Question.fetchRandomQuestion()
+                            try await API.Game.updateQuestion(gameId: self.gameId, questionId: question.id)
+                            self.currentQuestion = question
+                            self.questionStartTime = Date()
                         } catch {
                             self.errorMessage = error.localizedDescription
                         }
+                    }
+                    // If the question ID has changed and we don't have the new question loaded
+                    else if let newQuestionId = game.currentQuestionId,
+                            newQuestionId != oldQuestionId {
+                        do {
+                            self.currentQuestion = try await API.Question.getQuestion(id: newQuestionId)
+                            self.questionStartTime = Date()
+                        } catch {
+                            self.errorMessage = error.localizedDescription
+                        }
+                    }
+                    // If the question ID is nil, clear the current question
+                    else if game.currentQuestionId == nil {
+                        self.currentQuestion = nil
+                        self.questionStartTime = nil
                     }
                 }
             case .failure(let error):
@@ -61,24 +82,11 @@ final class GameViewModel: ObservableObject {
     
     func submitAnswer(_ index: Int) async {
         do {
-            // Get the current question before clearing it
-            guard let question = currentQuestion else { return }
+            guard let startTime = questionStartTime else { return }
+            let timeToAnswer = Date().timeIntervalSince(startTime)
             
             // Submit the answer and update game state
-            try await API.Game.submitAnswer(gameId: gameId, answerIndex: index)
-            
-            // Clear the current question
-            await MainActor.run {
-                self.currentQuestion = nil
-            }
-            
-            // If it's player 2's turn, fetch a new question
-            if let game = game,
-               let currentUserId = FirebaseManager.shared.getCurrentUser()?.uid,
-               currentUserId == game.player2Id {
-                let newQuestion = try await API.Question.fetchRandomQuestion()
-                try await API.Game.updateQuestion(gameId: gameId, questionId: newQuestion.id)
-            }
+            try await API.Game.submitAnswer(gameId: gameId, answerIndex: index, timeToAnswer: timeToAnswer)
         } catch {
             await MainActor.run {
                 self.errorMessage = error.localizedDescription

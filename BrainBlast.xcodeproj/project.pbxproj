@@ -11,6 +11,8 @@
 		B94F13E52D91982F00BF8AB6 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B94F13E42D91982F00BF8AB6 /* FirebaseAuth */; };
 		B94F13E72D91982F00BF8AB6 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = B94F13E62D91982F00BF8AB6 /* FirebaseFirestore */; };
 		B94F13E92D91982F00BF8AB6 /* FirebaseMessaging in Frameworks */ = {isa = PBXBuildFile; productRef = B94F13E82D91982F00BF8AB6 /* FirebaseMessaging */; };
+		B94F162E2D91D8B800BF8AB6 /* ConfettiSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = B94F162D2D91D8B800BF8AB6 /* ConfettiSwiftUI */; };
+		B94F16312D91DE2C00BF8AB6 /* SDWebImageSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = B94F16302D91DE2C00BF8AB6 /* SDWebImageSwiftUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +45,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B94F16312D91DE2C00BF8AB6 /* SDWebImageSwiftUI in Frameworks */,
+				B94F162E2D91D8B800BF8AB6 /* ConfettiSwiftUI in Frameworks */,
 				B94F13E92D91982F00BF8AB6 /* FirebaseMessaging in Frameworks */,
 				B94F13E32D91982F00BF8AB6 /* FirebaseAnalytics in Frameworks */,
 				B94F13E52D91982F00BF8AB6 /* FirebaseAuth in Frameworks */,
@@ -93,6 +97,8 @@
 				B94F13E42D91982F00BF8AB6 /* FirebaseAuth */,
 				B94F13E62D91982F00BF8AB6 /* FirebaseFirestore */,
 				B94F13E82D91982F00BF8AB6 /* FirebaseMessaging */,
+				B94F162D2D91D8B800BF8AB6 /* ConfettiSwiftUI */,
+				B94F16302D91DE2C00BF8AB6 /* SDWebImageSwiftUI */,
 			);
 			productName = BrainBlast;
 			productReference = B94F13CE2D9197A200BF8AB6 /* BrainBlast.app */;
@@ -124,6 +130,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				B94F13E12D91982F00BF8AB6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				B94F162C2D91D8B800BF8AB6 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */,
+				B94F162F2D91DE2C00BF8AB6 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B94F13CF2D9197A200BF8AB6 /* Products */;
@@ -367,6 +375,22 @@
 				minimumVersion = 11.10.0;
 			};
 		};
+		B94F162C2D91D8B800BF8AB6 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/simibac/ConfettiSwiftUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.2;
+			};
+		};
+		B94F162F2D91DE2C00BF8AB6 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SDWebImage/SDWebImageSwiftUI";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.1.3;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -389,6 +413,16 @@
 			isa = XCSwiftPackageProductDependency;
 			package = B94F13E12D91982F00BF8AB6 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseMessaging;
+		};
+		B94F162D2D91D8B800BF8AB6 /* ConfettiSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B94F162C2D91D8B800BF8AB6 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */;
+			productName = ConfettiSwiftUI;
+		};
+		B94F16302D91DE2C00BF8AB6 /* SDWebImageSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = B94F162F2D91DE2C00BF8AB6 /* XCRemoteSwiftPackageReference "SDWebImageSwiftUI" */;
+			productName = SDWebImageSwiftUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

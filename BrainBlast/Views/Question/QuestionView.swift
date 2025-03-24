@@ -10,6 +10,9 @@ import SwiftUI
 struct QuestionView: View {
     @ObservedObject var viewModel: GameViewModel
     let question: QuizQuestion
+    @State private var selectedAnswerIndex: Int?
+    @State private var isAnswerCorrect: Bool?
+    @State private var isSubmitting = false
     
     private var isCurrentPlayerTurn: Bool {
         guard let game = viewModel.game,
@@ -32,6 +35,32 @@ struct QuestionView: View {
                 Circle()
                     .fill(index < score ? Color.green : Color.gray.opacity(0.3))
                     .frame(width: 12, height: 12)
+            }
+        }
+    }
+    
+    private func getAnswerBackgroundColor(for index: Int) -> Color {
+        if let selectedIndex = selectedAnswerIndex {
+            if index == selectedIndex {
+                if let isCorrect = isAnswerCorrect {
+                    return isCorrect ? Color.green.opacity(0.3) : Color.red.opacity(0.3)
+                }
+            }
+        }
+        return Color.white
+    }
+    
+    private func handleAnswerSelection(_ index: Int) {
+        guard !isSubmitting else { return }
+        
+        selectedAnswerIndex = index
+        isAnswerCorrect = index == question.correctAnswer
+        isSubmitting = true
+        
+        // Delay the submission by 1 second to show the feedback
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            Task {
+                await viewModel.submitAnswer(index)
             }
         }
     }
@@ -80,9 +109,7 @@ struct QuestionView: View {
                 VStack(spacing: 12) {
                     ForEach(question.options.indices, id: \.self) { index in
                         Button {
-                            Task {
-                                await viewModel.submitAnswer(index)
-                            }
+                            handleAnswerSelection(index)
                         } label: {
                             HStack {
                                 Text(["A", "B", "C", "D"][index])
@@ -100,10 +127,11 @@ struct QuestionView: View {
                             }
                             .padding(.horizontal)
                             .padding(.vertical, 8)
-                            .background(Color.white)
+                            .background(getAnswerBackgroundColor(for: index))
                             .cornerRadius(10)
                             .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
                         }
+                        .disabled(isSubmitting)
                     }
                 }
                 .padding(.horizontal)
