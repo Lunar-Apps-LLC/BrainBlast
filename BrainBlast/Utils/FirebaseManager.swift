@@ -4,9 +4,11 @@ import FirebaseFirestore
 
 class FirebaseManager {
     static let shared = FirebaseManager()
+    let firestore: Firestore
     
     private init() {
         FirebaseApp.configure()
+        self.firestore = Firestore.firestore()
     }
     
     func signInAnonymously() async throws -> User {

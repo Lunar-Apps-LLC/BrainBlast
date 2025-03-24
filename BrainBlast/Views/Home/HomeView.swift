@@ -10,7 +10,7 @@ import SwiftUI
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
     @State private var navigateToGame = false
-    @State private var gameId: String?
+    @State private var showGameCode = false
     
     var body: some View {
         NavigationStack {
@@ -27,8 +27,27 @@ struct HomeView: View {
                     }
                 }
                 .navigationDestination(isPresented: $navigateToGame) {
-                    if let gameId = gameId {
+                    if let gameId = viewModel.gameId {
                         GameView(gameId: gameId)
+                    }
+                }
+                .onChange(of: viewModel.gameId) { newValue in
+                    if newValue != nil {
+                        if viewModel.gameCode != nil {
+                            // Player 1 created the game
+                            showGameCode = true
+                        } else {
+                            // Player 2 joined the game
+                            navigateToGame = true
+                        }
+                    }
+                }
+                .sheet(isPresented: $showGameCode) {
+                    if let gameCode = viewModel.gameCode {
+                        GameCodeView(gameCode: gameCode) {
+                            showGameCode = false
+                            navigateToGame = true
+                        }
                     }
                 }
         }
@@ -66,5 +85,40 @@ struct HomeView: View {
             }
         }
         .padding()
+    }
+}
+
+struct GameCodeView: View {
+    let gameCode: String
+    let onStart: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 30) {
+            Text("Share this code with Player 2")
+                .font(.title2)
+                .multilineTextAlignment(.center)
+            
+            Text(gameCode)
+                .font(.system(size: 60, weight: .bold, design: .rounded))
+                .foregroundColor(AppColor.primaryText)
+            
+            Text("Waiting for Player 2 to join...")
+                .font(.headline)
+                .foregroundColor(.gray)
+            
+            Button {
+                onStart()
+            } label: {
+                Text("Start Game")
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(AppColor.primaryText)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+            }
+            .padding(.top)
+        }
+        .padding()
+        .presentationDetents([.medium])
     }
 }

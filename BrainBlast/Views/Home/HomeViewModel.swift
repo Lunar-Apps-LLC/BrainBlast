@@ -11,14 +11,21 @@ final class HomeViewModel: ObservableObject {
     @Published var gameCodeTextField: String = ""
     @Published var errorMessage: String?
     @Published var isLoading = false
+    @Published var gameId: String?
+    @Published var gameCode: String?
     
     func createGame() async {
-        isLoading = true
+        await MainActor.run {
+            isLoading = true
+            errorMessage = nil
+        }
+        
         do {
             let game = try await API.Game.createGame()
             await MainActor.run {
+                self.gameId = game.id
+                self.gameCode = game.code
                 self.isLoading = false
-                // Navigate to game view
             }
         } catch {
             await MainActor.run {
@@ -34,12 +41,16 @@ final class HomeViewModel: ObservableObject {
             return
         }
         
-        isLoading = true
+        await MainActor.run {
+            isLoading = true
+            errorMessage = nil
+        }
+        
         do {
             let game = try await API.Game.joinGame(code: gameCodeTextField)
             await MainActor.run {
+                self.gameId = game.id
                 self.isLoading = false
-                // Navigate to game view
             }
         } catch {
             await MainActor.run {

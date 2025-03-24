@@ -8,24 +8,26 @@
 import SwiftUI
 
 struct WaitingView: View {
+    var message: String = "Waiting for Player 2 to join..."
+    
     var body: some View {
-        Content
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(AppColor.primaryBackground)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Image("Logo")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 40)
-                }
+        VStack(spacing: 20) {
+            ProgressView()
+            Text(message)
+                .font(.headline)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(AppColor.primaryBackground)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Image("Logo")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 40)
             }
-    }
-        
-    @ViewBuilder private var Content: some View {
-        VStack {
-
         }
     }
 }
