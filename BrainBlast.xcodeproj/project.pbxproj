@@ -17,9 +17,22 @@
 		B94F13CE2D9197A200BF8AB6 /* BrainBlast.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BrainBlast.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		B94F162B2D91BC3200BF8AB6 /* Exceptions for "BrainBlast" folder in "BrainBlast" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B94F13CD2D9197A200BF8AB6 /* BrainBlast */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		B94F13D02D9197A200BF8AB6 /* BrainBlast */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				B94F162B2D91BC3200BF8AB6 /* Exceptions for "BrainBlast" folder in "BrainBlast" target */,
+			);
 			path = BrainBlast;
 			sourceTree = "<group>";
 		};
@@ -273,6 +286,7 @@
 				DEVELOPMENT_TEAM = 999TN6V9X5;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BrainBlast/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -302,6 +316,7 @@
 				DEVELOPMENT_TEAM = 999TN6V9X5;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BrainBlast/Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

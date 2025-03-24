@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import FirebaseFirestore
 
 final class HomeViewModel: ObservableObject {
     @Published var gameCodeTextField: String = ""
@@ -13,6 +14,8 @@ final class HomeViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var gameId: String?
     @Published var gameCode: String?
+    @Published var shouldNavigateToGame = false
+    private var listener: ListenerRegistration?
     
     func createGame() async {
         await MainActor.run {
@@ -27,6 +30,7 @@ final class HomeViewModel: ObservableObject {
                 self.gameCode = game.code
                 self.isLoading = false
             }
+            setupGameListener(gameId: game.id)
         } catch {
             await MainActor.run {
                 self.errorMessage = error.localizedDescription
@@ -51,6 +55,7 @@ final class HomeViewModel: ObservableObject {
             await MainActor.run {
                 self.gameId = game.id
                 self.isLoading = false
+                self.shouldNavigateToGame = true
             }
         } catch {
             await MainActor.run {
@@ -58,5 +63,29 @@ final class HomeViewModel: ObservableObject {
                 self.isLoading = false
             }
         }
+    }
+    
+    private func setupGameListener(gameId: String) {
+        listener?.remove()
+        listener = API.Game.listen(gameId: gameId) { [weak self] result in
+            guard let self = self else { return }
+            
+            switch result {
+            case .success(let game):
+                if game.state == .playing {
+                    Task { @MainActor in
+                        self.shouldNavigateToGame = true
+                    }
+                }
+            case .failure(let error):
+                Task { @MainActor in
+                    self.errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+    
+    deinit {
+        listener?.remove()
     }
 }

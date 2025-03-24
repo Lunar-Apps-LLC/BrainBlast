@@ -8,8 +8,6 @@
 import SwiftUI
 
 struct PrimaryButtonView: View {
-    @Environment(\.colorScheme) var colorScheme
-    
     var title: String
     var is3D: Bool
     let cornerRadius: CGFloat = 12
@@ -17,6 +15,7 @@ struct PrimaryButtonView: View {
     var fontColor: Color? = nil
     var isDisabled: Bool = false
     var isLoading: Bool = false
+    var isRainbow: Bool = false
     let action: () -> Void
     
     var reallyDisabled: Bool {
@@ -33,14 +32,14 @@ struct PrimaryButtonView: View {
                 ProgressView()
             } else {
                 Text(title)
-                    .appFont(size: 18, weight: .bold, color: fontColor != nil ? fontColor! : (isDisabled ? .gray : AppColor.primaryButtonText), type: .inter)
+                    .appFont(size: 18, weight: .bold, color: fontColor != nil ? fontColor! : (isDisabled ? .gray : AppColor.primaryButtonText), type: .classicComic)
                     .padding()
                     .frame(maxWidth: .infinity)
             }
         }
         .buttonStyle(is3D ? 
-            AnyButtonStyle(ThreeD(isDarkMode: colorScheme == .dark, cornerRadius: cornerRadius, backgroundColor: backgroundColor, isDisabled: reallyDisabled)) :
-            AnyButtonStyle(Flat(cornerRadius: cornerRadius, backgroundColor: backgroundColor, isDisabled: reallyDisabled)))
+            AnyButtonStyle(ThreeD(cornerRadius: cornerRadius, backgroundColor: backgroundColor, isDisabled: reallyDisabled, isRainbow: isRainbow)) :
+            AnyButtonStyle(Flat(cornerRadius: cornerRadius, backgroundColor: backgroundColor, isDisabled: reallyDisabled, isRainbow: isRainbow)))
         .frame(height: 50)
     }
 }
@@ -63,23 +62,32 @@ struct PrimaryButtonView_Previews: PreviewProvider {
 // MARK: Button Styles
 
 struct ThreeD: ButtonStyle {
-    var isDarkMode: Bool
     var cornerRadius: CGFloat
     var backgroundColor: Color? = nil
     var isDisabled: Bool = false
+    var isRainbow: Bool = false
 
     func makeBody(configuration: Configuration) -> some View {
         ZStack {
             let offset: CGFloat = 5
+            let rainbowGradient = LinearGradient(
+                colors: [.red, .yellow, .green, .blue, .purple],
+                startPoint: .leading,
+                endPoint: .trailing
+            )
             
+            // Bottom layer (3D effect)
             RoundedRectangle(cornerRadius: cornerRadius)
-                .foregroundColor(!isDarkMode ? (isDisabled ? .gray.opacity(0.3) : (backgroundColor != nil ? backgroundColor! : AppColor.primaryButtonBackground)) : .gray)
+                .fill(isDisabled ? AnyShapeStyle(Color.gray.opacity(0.3)) : 
+                      (isRainbow ? AnyShapeStyle(Color.gray.opacity(0.7)) : // Darker gray (0.7 opacity instead of default)
+                       AnyShapeStyle(backgroundColor != nil ? backgroundColor! : AppColor.primaryButtonBackground)))
                 .offset(y: offset)
             
+            // Top layer
             RoundedRectangle(cornerRadius: cornerRadius)
-                .foregroundColor(isDarkMode ? 
-                    (isDisabled ? .gray.opacity(0.3) : (backgroundColor != nil ? backgroundColor! : AppColor.primaryButtonBackground)) : 
-                    (isDisabled ? .gray.opacity(0.3) : (backgroundColor != nil ? backgroundColor! : AppColor.primaryButtonBackground).lighter(by: 15)))
+                .fill(isDisabled ? AnyShapeStyle(Color.gray.opacity(0.3)) : 
+                      (isRainbow ? AnyShapeStyle(rainbowGradient) :
+                       AnyShapeStyle((backgroundColor != nil ? backgroundColor! : AppColor.primaryButtonBackground).lighter(by: 15))))
                 .offset(y: isDisabled ? offset : (configuration.isPressed ? offset : 0))
             
             configuration.label
@@ -92,10 +100,19 @@ struct Flat: ButtonStyle {
     var cornerRadius: CGFloat
     var backgroundColor: Color? = nil
     var isDisabled: Bool = false
+    var isRainbow: Bool = false
 
     func makeBody(configuration: Configuration) -> some View {
+        let rainbowGradient = LinearGradient(
+            colors: [.red, .yellow, .green, .blue, .purple],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+        
         RoundedRectangle(cornerRadius: cornerRadius)
-            .foregroundColor(isDisabled ? .gray.opacity(0.3) : (backgroundColor != nil ? backgroundColor! : AppColor.primaryButtonBackground))
+            .fill(isDisabled ? AnyShapeStyle(Color.gray.opacity(0.3)) : 
+                  (isRainbow ? AnyShapeStyle(rainbowGradient) :
+                   AnyShapeStyle(backgroundColor != nil ? backgroundColor! : AppColor.primaryButtonBackground)))
             .overlay(
                 configuration.label
                     .foregroundColor(isDisabled ? .gray : AppColor.primaryButtonText)

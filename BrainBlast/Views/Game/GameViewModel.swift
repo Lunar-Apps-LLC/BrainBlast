@@ -30,9 +30,20 @@ final class GameViewModel: ObservableObject {
                     let oldState = self.game?.state
                     self.game = game
                     
+                    // If the game just transitioned from waiting to playing (Player 2 joined)
+                    if oldState == .waiting && game.state == .playing {
+                        do {
+                            // Fetch the first question
+                            let question = try await API.Question.fetchRandomQuestion()
+                            try await API.Game.updateQuestion(gameId: self.gameId, questionId: question.id)
+                            self.currentQuestion = question
+                        } catch {
+                            self.errorMessage = error.localizedDescription
+                        }
+                    }
                     // If there's a question ID in the game and we don't have the question loaded
-                    if let questionId = game.currentQuestionId,
-                       self.currentQuestion == nil {
+                    else if let questionId = game.currentQuestionId,
+                            self.currentQuestion == nil {
                         do {
                             self.currentQuestion = try await API.Question.getQuestion(id: questionId)
                         } catch {

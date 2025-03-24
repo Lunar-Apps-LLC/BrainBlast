@@ -26,44 +26,129 @@ struct QuestionView: View {
         return false
     }
     
+    private func scoreDotsView(score: Int) -> some View {
+        HStack(spacing: 4) {
+            ForEach(0..<3) { index in
+                Circle()
+                    .fill(index < score ? Color.green : Color.gray.opacity(0.3))
+                    .frame(width: 12, height: 12)
+            }
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 20) {
-            if let game = viewModel.game {
+            // Top bar with scores
+            HStack {
                 HStack {
-                    Text("Player 1: \(game.player1Score)")
-                    Spacer()
-                    Text("Player 2: \(game.player2Score)")
+                    Image(systemName: "person.fill")
+                        .foregroundColor(.blue)
+                    scoreDotsView(score: viewModel.game?.player1Score ?? 0)
                 }
-                .font(.headline)
-                .padding()
+                
+                Spacer()
+                
+                HStack {
+                    scoreDotsView(score: viewModel.game?.player2Score ?? 0)
+                    Image(systemName: "person.fill")
+                        .foregroundColor(.red)
+                }
             }
+            .padding(.horizontal)
+            .padding(.top)
             
+            // Question number
+            ZStack {
+                RoundedRectangle(cornerRadius: 15)
+                    .fill(Color.yellow.opacity(0.3))
+                    .frame(width: 60, height: 30)
+                
+                Text("14")
+                    .font(.system(size: 18, weight: .bold))
+            }
+            .padding(.top)
+            
+            // Question text
             Text(question.text)
-                .font(.title2)
+                .font(.title3)
+                .fontWeight(.medium)
                 .multilineTextAlignment(.center)
-                .padding()
+                .padding(.horizontal)
+                .padding(.top)
             
             if isCurrentPlayerTurn {
-                ForEach(question.options.indices, id: \.self) { index in
-                    Button {
-                        Task {
-                            await viewModel.submitAnswer(index)
-                        }
-                    } label: {
-                        Text(question.options[index])
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(AppColor.primaryText)
-                            .foregroundColor(.white)
+                VStack(spacing: 12) {
+                    ForEach(question.options.indices, id: \.self) { index in
+                        Button {
+                            Task {
+                                await viewModel.submitAnswer(index)
+                            }
+                        } label: {
+                            HStack {
+                                Text(["A", "B", "C", "D"][index])
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(.black)
+                                    .frame(width: 30, height: 30)
+                                    .background(Color.gray.opacity(0.2))
+                                    .clipShape(Circle())
+                                
+                                Text(question.options[index])
+                                    .font(.system(size: 16, weight: .regular))
+                                    .foregroundColor(.black)
+                                
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                            .padding(.vertical, 8)
+                            .background(Color.white)
                             .cornerRadius(10)
+                            .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        }
                     }
                 }
+                .padding(.horizontal)
+                .padding(.top)
             } else {
                 Text("Waiting for other player...")
                     .font(.title3)
                     .foregroundColor(.gray)
+                    .padding(.top, 40)
             }
+            
+            Spacer()
         }
-        .padding()
+        .background(Color.gray.opacity(0.1))
+    }
+}
+
+// MARK: - Preview
+struct QuestionView_Previews: PreviewProvider {
+    static let mockQuestion = QuizQuestion(
+        id: "mock",
+        text: "What is 10% of 100?",
+        options: ["1", "5", "10", "15"],
+        correctAnswer: 2
+    )
+    
+    static let mockGame = QuizGame(
+        id: "mockGameId",
+        code: "ABC123",
+        player1Id: "player1",
+        player2Id: "player2",
+        currentQuestionId: "mock",
+        player1Score: 2,
+        player2Score: 1,
+        currentPlayerTurn: 1,
+        state: .playing
+    )
+    
+    static var mockViewModel: GameViewModel = {
+        let vm = GameViewModel(gameId: "mockGameId")
+        vm.game = mockGame
+        return vm
+    }()
+    
+    static var previews: some View {
+        QuestionView(viewModel: mockViewModel, question: mockQuestion)
     }
 }

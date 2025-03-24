@@ -11,11 +11,14 @@ enum AppFontType: String, Codable {
     case system
     case rounded
     case inter
+    case classicComic
     
     func fontName(weight: Font.Weight, isItalic: Bool = false) -> String {
         switch self {
         case .inter:
             return isItalic ? interItalicFontName(for: weight) : interFontName(for: weight)
+        case .classicComic:
+            return "ClassicComic-Bold"
         default:
             return ""
         }
@@ -27,6 +30,8 @@ enum AppFontType: String, Codable {
             return UIFont.rounded(ofSize: 33, weight: .bold)
         case .inter:
             return UIFont(name: "Inter24pt-Bold", size: 33) ?? UIFont.systemFont(ofSize: 33, weight: .bold)
+        case .classicComic:
+            return UIFont(name: "ClassicComic-Bold", size: 33) ?? UIFont.systemFont(ofSize: 33, weight: .bold)
         default:
             return UIFont.systemFont(ofSize: 33, weight: .bold)
         }
@@ -38,6 +43,8 @@ enum AppFontType: String, Codable {
             return UIFont.rounded(ofSize: 18, weight: .bold)
         case .inter:
             return UIFont(name: "Inter24pt-Bold", size: 18) ?? UIFont.systemFont(ofSize: 18, weight: .bold)
+        case .classicComic:
+            return UIFont(name: "ClassicComic-Bold", size: 18) ?? UIFont.systemFont(ofSize: 18, weight: .bold)
         default:
             return UIFont.systemFont(ofSize: 18, weight: .bold)
         }
@@ -92,6 +99,8 @@ extension Font {
             return Font.system(size: size, weight: weight, design: .rounded)
         case .inter:
             return Font.custom(type.fontName(weight: weight, isItalic: isItalic), size: size)
+        case .classicComic:
+            return Font.custom("ClassicComic-Bold", size: size)
         }
     }
 }
